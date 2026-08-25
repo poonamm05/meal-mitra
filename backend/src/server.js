@@ -1,0 +1,80 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { connectDB } from './config/db.js';
+import Recipe from './models/Recipe.js';
+import { seedDatabase } from './seed/seeder.js';
+
+// Route imports
+import authRoutes from './routes/authRoutes.js';
+import recipeRoutes from './routes/recipeRoutes.js';
+import recommendationRoutes from './routes/recommendationRoutes.js';
+import mealPlanRoutes from './routes/mealPlanRoutes.js';
+import mealHistoryRoutes from './routes/mealHistoryRoutes.js';
+import familyVoteRoutes from './routes/familyVoteRoutes.js';
+import groceryRoutes from './routes/groceryRoutes.js';
+import aiAssistantRoutes from './routes/aiAssistantRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/recipes', recipeRoutes);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/meal-plans', mealPlanRoutes);
+app.use('/api/meal-history', mealHistoryRoutes);
+app.use('/api/family-votes', familyVoteRoutes);
+app.use('/api/groceries', groceryRoutes);
+app.use('/api/ai', aiAssistantRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'MealMitra API is running smoothly 🚀',
+    timestamp: new Date(),
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+  });
+});
+
+// Start Server immediately and connect Database in parallel
+const server = app.listen(PORT, () => {
+  console.log(`\n==============================================`);
+  console.log(`🍳 MealMitra Backend Server Running on Port ${PORT}`);
+  console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`🤖 AI Engine: ${process.env.GEMINI_API_KEY ? 'Gemini AI Live' : 'Intelligent Heuristic Engine'}`);
+  console.log(`==============================================\n`);
+});
+
+// Attempt database connection & seeding asynchronously
+connectDB().then(async (isConnected) => {
+  if (isConnected) {
+    try {
+      const count = await Recipe.countDocuments();
+      if (count === 0) {
+        console.log('Database empty, auto-seeding sample recipes & demo users...');
+        await seedDatabase();
+      }
+    } catch (e) {
+      console.warn('Seeding check warning:', e.message);
+    }
+  }
+});
