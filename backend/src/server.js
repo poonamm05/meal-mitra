@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import { connectDB } from './config/db.js';
 import Recipe from './models/Recipe.js';
 import { seedDatabase } from './seed/seeder.js';
@@ -16,7 +16,6 @@ import groceryRoutes from './routes/groceryRoutes.js';
 import aiAssistantRoutes from './routes/aiAssistantRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

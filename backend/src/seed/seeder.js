@@ -1,11 +1,10 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import { connectDB } from '../config/db.js';
 import Recipe from '../models/Recipe.js';
 import User from '../models/User.js';
 import { sampleRecipes } from './recipesData.js';
 
-dotenv.config();
 
 export const seedDatabase = async () => {
   try {
