@@ -36,6 +36,16 @@ app.use('/api/groceries', groceryRoutes);
 app.use('/api/ai', aiAssistantRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    name: 'MealMitra Backend API',
+    status: 'online',
+    message: 'Welcome to MealMitra API 🍳',
+    health: '/api/health',
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
