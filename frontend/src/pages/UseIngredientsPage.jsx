@@ -10,9 +10,7 @@ export default function UseIngredientsPage() {
   const { user } = useAuth();
 
   const [catalog, setCatalog] = useState({});
-  const [selectedIngredients, setSelectedIngredients] = useState(() => {
-    return (user?.pantryItems || []).map((p) => p.name);
-  });
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [customInput, setCustomInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 

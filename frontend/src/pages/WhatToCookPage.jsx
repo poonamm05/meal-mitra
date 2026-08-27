@@ -40,9 +40,7 @@ export default function WhatToCookPage() {
 
   // Tag inputs for available ingredients
   const [ingredientInput, setIngredientInput] = useState('');
-  const [availableIngredients, setAvailableIngredients] = useState(() => {
-    return (user?.pantryItems || []).slice(0, 4).map((p) => p.name);
-  });
+  const [availableIngredients, setAvailableIngredients] = useState([]);
 
   // Results state
   const [recommendations, setRecommendations] = useState([]);

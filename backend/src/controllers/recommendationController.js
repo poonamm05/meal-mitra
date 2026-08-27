@@ -65,17 +65,9 @@ export const getSmartRecommendations = async (req, res) => {
 
 export const getPantryCookingMatches = async (req, res) => {
   try {
-    let { ingredients = [] } = req.body;
+    const { ingredients = [] } = req.body;
 
-    // If user passed empty ingredients and is authenticated, optionally use user's saved pantry
-    if ((!ingredients || ingredients.length === 0) && req.user) {
-      const user = await User.findById(req.user._id);
-      if (user && user.pantryItems && user.pantryItems.length > 0) {
-        ingredients = user.pantryItems.map((p) => p.name);
-      }
-    }
-
-    if (!ingredients || ingredients.length === 0) {
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
       return res.json({
         success: true,
         data: {

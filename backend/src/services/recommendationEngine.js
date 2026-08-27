@@ -63,17 +63,20 @@ export const rankRecipesForUser = async ({
 
     const recipeIdStr = (recipe._id || '').toString();
 
-    // 1. Meal Type Compatibility
+    // 1. Strict Meal Type Filtering
     if (mealType && mealType !== 'any') {
-      const matchMealType = Array.isArray(recipe.mealType)
-        ? recipe.mealType.includes(mealType)
-        : recipe.mealType === mealType;
-      if (matchMealType) {
-        score += 25;
-        rationalePoints.push(`Ideal for ${mealType}`);
-      } else {
-        score -= 30;
+      const targetMeal = mealType.toLowerCase().trim();
+      const recipeMealTypes = Array.isArray(recipe.mealType)
+        ? recipe.mealType.map((m) => m.toLowerCase().trim())
+        : [(recipe.mealType || '').toLowerCase().trim()];
+
+      const matchMealType = recipeMealTypes.includes(targetMeal);
+      if (!matchMealType) {
+        // Strictly exclude dishes that do not belong to the selected mealType
+        return null;
       }
+      score += 30;
+      rationalePoints.push(`Perfect for ${mealType}`);
     }
 
     // 2. Dietary Preference Compliance
@@ -222,7 +225,7 @@ export const rankRecipesForUser = async ({
       isRecentlyCooked: historyMap.has(recipeIdStr) && historyMap.get(recipeIdStr) <= 2,
       daysSinceCooked: historyMap.get(recipeIdStr),
     };
-  });
+  }).filter(Boolean);
 
   // Sort descending by score
   scoredRecipes.sort((a, b) => b.score - a.score);
