@@ -78,6 +78,20 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Public catalog sync endpoint to refresh photos & admin credentials on demand
+app.get('/api/sync-catalog', async (req, res) => {
+  try {
+    const result = await seedDatabase();
+    res.json({
+      success: true,
+      message: '✅ Database recipes, photos, and admin credentials synchronized successfully!',
+      details: result,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Start Server immediately and connect Database in parallel
 const server = app.listen(PORT, () => {
   console.log(`\n==============================================`);
@@ -91,11 +105,8 @@ const server = app.listen(PORT, () => {
 connectDB().then(async (isConnected) => {
   if (isConnected) {
     try {
-      const count = await Recipe.countDocuments();
-      if (count === 0) {
-        console.log('Database empty, auto-seeding sample recipes & demo users...');
-        await seedDatabase();
-      }
+      console.log('🔄 Synchronizing recipes, accurate dish photos, and admin credentials...');
+      await seedDatabase();
     } catch (e) {
       console.warn('Seeding check warning:', e.message);
     }
