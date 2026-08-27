@@ -3,7 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import { connectDB } from './config/db.js';
 import Recipe from './models/Recipe.js';
-import { seedDatabase } from './seed/seeder.js';
+import { seedDatabase, ensureUsersExist } from './seed/seeder.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -105,10 +105,16 @@ const server = app.listen(PORT, () => {
 connectDB().then(async (isConnected) => {
   if (isConnected) {
     try {
-      console.log('🔄 Synchronizing recipes, accurate dish photos, and admin credentials...');
-      await seedDatabase();
+      const count = await Recipe.countDocuments();
+      if (count === 0) {
+        console.log('Database empty, seeding initial recipes...');
+        await seedDatabase();
+      } else {
+        console.log(`✅ Database connected with ${count} recipes. Preserving custom admin updates.`);
+        await ensureUsersExist();
+      }
     } catch (e) {
-      console.warn('Seeding check warning:', e.message);
+      console.warn('Startup check warning:', e.message);
     }
   }
 });

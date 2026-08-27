@@ -6,28 +6,8 @@ import User from '../models/User.js';
 import { sampleRecipes } from './recipesData.js';
 
 
-export const seedDatabase = async () => {
+export const ensureUsersExist = async () => {
   try {
-    const isConnected = await connectDB();
-    if (!isConnected) {
-      console.log('Skipping DB seeding because MongoDB is offline.');
-      return;
-    }
-
-    console.log('🌱 Synchronizing DB recipes, dish photos & admin accounts...');
-
-    // Upsert all recipes with updated photos & data
-    let syncedCount = 0;
-    for (const r of sampleRecipes) {
-      await Recipe.findOneAndUpdate(
-        { name: r.name },
-        { $set: r },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-      syncedCount++;
-    }
-    console.log(`✅ Synced ${syncedCount} recipes with accurate photos!`);
-
     // Ensure Admin account exists with Admin@1234
     const adminExists = await User.findOne({ email: 'admin@mealmitra.com' });
     if (!adminExists) {
@@ -44,11 +24,6 @@ export const seedDatabase = async () => {
         pantryItems: []
       });
       console.log('✅ Created Admin user: admin@mealmitra.com / Admin@1234');
-    } else {
-      adminExists.password = 'Admin@1234';
-      adminExists.role = 'admin';
-      await adminExists.save();
-      console.log('✅ Updated Admin account: admin@mealmitra.com (Password reset to Admin@1234, Role: admin)');
     }
 
     // Demo users setup
@@ -90,14 +65,28 @@ export const seedDatabase = async () => {
       if (!exists) {
         await User.create(u);
         console.log(`✅ Created demo user: ${u.email}`);
-      } else {
-        exists.password = u.password;
-        await exists.save();
       }
     }
+  } catch (err) {
+    console.warn('User setup warning:', err.message);
+  }
+};
 
-    console.log('✨ Database Synchronization Complete!');
-    return { success: true, count: syncedCount };
+export const seedDatabase = async () => {
+  try {
+    const isConnected = await connectDB();
+    if (!isConnected) {
+      console.log('Skipping DB seeding because MongoDB is offline.');
+      return;
+    }
+
+    console.log('🌱 Seeding initial recipes into empty database...');
+    const insertedRecipes = await Recipe.insertMany(sampleRecipes);
+    console.log(`✅ Seeded ${insertedRecipes.length} recipes successfully!`);
+
+    await ensureUsersExist();
+    console.log('✨ Database Seeding Complete!');
+    return { success: true, count: insertedRecipes.length };
   } catch (err) {
     console.error('Error during database seeding:', err);
     throw err;
