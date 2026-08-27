@@ -22,7 +22,8 @@ export const AuthProvider = ({ children }) => {
       saveUser(res.data.data);
       return { success: true };
     } catch (err) {
-      return { success: false, message: err.response?.data?.message || 'Login failed' };
+      const msg = err.customMessage || err.response?.data?.message || err.message || 'Login failed';
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
@@ -35,7 +36,8 @@ export const AuthProvider = ({ children }) => {
       saveUser(res.data.data);
       return { success: true };
     } catch (err) {
-      return { success: false, message: err.response?.data?.message || 'Registration failed' };
+      const msg = err.customMessage || err.response?.data?.message || err.message || 'Registration failed';
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,8 @@ export const AuthProvider = ({ children }) => {
       saveUser(res.data.data);
       return { success: true };
     } catch (err) {
-      return { success: false, message: err.response?.data?.message || 'Demo login failed' };
+      const msg = err.customMessage || err.response?.data?.message || err.message || 'Demo login failed';
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }

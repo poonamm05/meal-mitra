@@ -1,8 +1,23 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  let url = import.meta.env.VITE_API_URL;
+  if (!url || typeof url !== 'string' || !url.trim()) {
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      return 'http://localhost:5000/api';
+    }
+    return '/api';
+  }
+  url = url.trim().replace(/\/+$/, '');
+  if (!url.endsWith('/api') && !url.includes('/api/')) {
+    url = `${url}/api`;
+  }
+  return url;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: 10000,
+  baseURL: getBaseURL(),
+  timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -14,6 +29,19 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Response interceptor for clear connection error messages
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (!error.response) {
+      error.customMessage = 'Unable to reach backend server. Please check if your backend service is running on Render.';
+    } else if (error.response.status === 404) {
+      error.customMessage = 'Backend endpoint not found (404). Please verify VITE_API_URL on Render.';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const register = (data) => api.post('/auth/register', data);
